@@ -1,8 +1,8 @@
-import os
 from flask import Flask, request, render_template
 import joblib
 import pandas as pd
 import numpy as np
+import os
 
 app = Flask(__name__)
 
@@ -25,12 +25,14 @@ def index():
     error = None
     if request.method == 'POST':
         try:
+            # Get form data
             model_name = request.form['model']
             open_price = float(request.form['open'])
             high = float(request.form['high'])
             low = float(request.form['low'])
             volume = float(request.form['volume'])
 
+            # Prepare input data
             input_data = pd.DataFrame({
                 'Open': [open_price],
                 'High': [high],
@@ -38,7 +40,10 @@ def index():
                 'Volume': [volume]
             })
 
+            # Scale the input data
             input_scaled = scaler.transform(input_data)
+
+            # Make prediction
             model = models[model_name]
             prediction = model.predict(input_scaled)[0]
             prediction = round(prediction, 2)
@@ -48,5 +53,4 @@ def index():
     return render_template('index.html', models=models.keys(), prediction=prediction, error=error)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(debug=True)
